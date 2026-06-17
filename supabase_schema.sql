@@ -37,7 +37,7 @@ CREATE TABLE public.credit_cards (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. CREDIT CARD INVOICES
+-- 4. CREDIT CARD INVOICES -
 CREATE TABLE public.credit_card_invoices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     credit_card_id UUID NOT NULL REFERENCES public.credit_cards(id) ON DELETE CASCADE,
