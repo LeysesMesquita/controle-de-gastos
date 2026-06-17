@@ -141,7 +141,7 @@ export default function AccountsManager() {
 
       {/* Modal Nova Conta */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
           <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-md p-6 shadow-xl">
             <div className="flex justify-between items-center mb-5">
               <h3 className="font-semibold text-lg text-gray-800 dark:text-white/90">Cadastrar Nova Conta</h3>
@@ -153,7 +153,7 @@ export default function AccountsManager() {
               
               <div>
                 <Label>Nome da Instituição/Conta</Label>
-                <Input placeholder="Ex: Nubank, Carteira..." value={name} onChange={(e) => setName(e.target.value)} />
+                <Input placeholder="Ex: Nubank, Carteira..." value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
 
               <div>
@@ -178,7 +178,7 @@ export default function AccountsManager() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Cancelar
                 </button>
-                <Button className="w-full" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Conta"}</Button>
+                <Button type="submit" className="w-full" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Conta"}</Button>
               </div>
             </form>
           </div>
