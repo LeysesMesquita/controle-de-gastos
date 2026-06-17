@@ -18,7 +18,7 @@ export default function SignInForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
@@ -109,7 +109,7 @@ export default function SignInForm() {
                   </div>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm" disabled={loading}>
+                  <Button onClick={handleSignIn} type="submit" className="w-full" size="sm" disabled={loading}>
                     {loading ? "Entrando..." : "Entrar"}
                   </Button>
                 </div>

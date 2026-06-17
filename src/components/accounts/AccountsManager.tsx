@@ -46,6 +46,8 @@ export default function AccountsManager() {
       if (user) {
         setUserId(user.id);
         fetchAccounts(user.id);
+      } else {
+        window.location.href = "/signin";
       }
     };
     init();
