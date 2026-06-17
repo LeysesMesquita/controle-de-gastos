@@ -51,9 +51,12 @@ export default function AccountsManager() {
     init();
   }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
-    if (!userId) return;
+    if (!userId) {
+      setErrorMsg("Usuário não encontrado. Recarregue a página.");
+      return;
+    }
     setSubmitting(true);
     setErrorMsg("");
 
@@ -178,7 +181,7 @@ export default function AccountsManager() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
                   Cancelar
                 </button>
-                <Button type="submit" className="w-full" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Conta"}</Button>
+                <Button onClick={handleSave} type="button" className="w-full" disabled={submitting}>{submitting ? "Salvando..." : "Salvar Conta"}</Button>
               </div>
             </form>
           </div>
