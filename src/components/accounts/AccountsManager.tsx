@@ -171,7 +171,7 @@ export default function AccountsManager() {
 
               <div>
                 <Label>Saldo Inicial Atual (R$)</Label>
-                <Input type="number" step="0.01" placeholder="0.00" value={balance} onChange={(e) => setBalance(e.target.value)} />
+                <Input type="number" step={0.01} placeholder="0.00" value={balance} onChange={(e) => setBalance(e.target.value)} />
               </div>
 
               <div className="flex gap-3 pt-4">
