@@ -1,28 +1,44 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default async function SaasAdminLayout({
+export default function SaasAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Verificação de Segurança Global para a rota /saas-admin
-  const { data: { user } } = await supabase.auth.getUser();
+  const router = useRouter();
+  const [authorized, setAuthorized] = useState(false);
 
-  if (!user) {
-    redirect("/signin");
-  }
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
 
-  // Verifica se ele está na tabela de Super Admins
-  const { data: saasAdmin } = await supabase
-    .from("saas_admins")
-    .select("id")
-    .eq("id", user.id)
-    .single();
+      if (!user) {
+        router.push("/signin");
+        return;
+      }
 
-  if (!saasAdmin) {
-    // Se não for Super Admin, manda pro painel normal
-    redirect("/");
+      const { data: saasAdmin } = await supabase
+        .from("saas_admins")
+        .select("id")
+        .eq("id", user.id)
+        .single();
+
+      if (!saasAdmin) {
+        router.push("/");
+        return;
+      }
+
+      setAuthorized(true);
+    }
+    checkAuth();
+  }, [router]);
+
+  if (!authorized) {
+    return <div className="min-h-screen flex items-center justify-center">Verificando permissões...</div>;
   }
 
   return (
