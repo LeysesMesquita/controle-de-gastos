@@ -43,6 +43,7 @@ const planningItems: NavItem[] = [
 ];
 
 const configItems: NavItem[] = [
+  { icon: <UserCircleIcon />, name: "Equipe e Usuários", path: "/users" },
   { icon: <PlugInIcon />, name: "Categorias & Tags", path: "/categories" },
   { icon: <PageIcon />, name: "Exportar Relatórios", path: "/reports" },
 ];

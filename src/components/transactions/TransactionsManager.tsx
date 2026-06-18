@@ -5,8 +5,10 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { PlusIcon } from "@/icons";
+import { useCompany } from "@/context/CompanyContext";
 
 export const TransactionsManager = () => {
+  const { activeCompanyId } = useCompany();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [creditCards, setCreditCards] = useState<any[]>([]);
@@ -33,28 +35,30 @@ export const TransactionsManager = () => {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      if (user && activeCompanyId) {
         setUserId(user.id);
-        fetchData(user.id);
+        fetchData(activeCompanyId);
+      } else if (!activeCompanyId) {
+        setLoading(false);
       } else {
         window.location.href = "/signin";
       }
     };
     init();
-  }, []);
+  }, [activeCompanyId]);
 
-  const fetchData = async (uid: string) => {
+  const fetchData = async (cid: string) => {
     setLoading(true);
     
     // Buscar Contas
-    const { data: accountsData } = await supabase.from("accounts").select("*").eq("user_id", uid);
+    const { data: accountsData } = await supabase.from("accounts").select("*").eq("company_id", cid);
     if (accountsData) {
       setAccounts(accountsData);
       if (accountsData.length > 0) setAccountId(accountsData[0].id);
     }
 
     // Buscar Cartões de Crédito
-    const { data: cardsData } = await supabase.from("credit_cards").select("*").eq("user_id", uid);
+    const { data: cardsData } = await supabase.from("credit_cards").select("*").eq("company_id", cid);
     if (cardsData) {
       setCreditCards(cardsData);
       if (cardsData.length > 0) setCreditCardId(cardsData[0].id);
@@ -64,7 +68,7 @@ export const TransactionsManager = () => {
     const { data: transactionsData } = await supabase
       .from("transactions")
       .select("*, accounts(name), credit_cards(name)")
-      .eq("user_id", uid)
+      .eq("company_id", cid)
       .order("date", { ascending: false });
 
     if (transactionsData) setTransactions(transactionsData);
@@ -141,6 +145,7 @@ export const TransactionsManager = () => {
       if (paymentMethod !== "CREDIT") {
         // COMPRA À VISTA (Conta Bancária)
         const { error: txError } = await supabase.from("transactions").insert({
+          company_id: activeCompanyId,
           user_id: userId,
           description,
           amount: numericAmount,
@@ -195,6 +200,7 @@ export const TransactionsManager = () => {
           const descStr = numInstallments > 1 ? `${description} (${i + 1}/${numInstallments})` : description;
 
           const { error: txError } = await supabase.from("transactions").insert({
+            company_id: activeCompanyId,
             user_id: userId,
             description: descStr,
             amount: installmentValue,
@@ -219,7 +225,7 @@ export const TransactionsManager = () => {
       setDate(new Date().toISOString().split("T")[0]);
       setInstallments("1");
       
-      fetchData(userId);
+      if (activeCompanyId) fetchData(activeCompanyId);
     } catch (err: any) {
       setErrorMsg(err.message || "Erro desconhecido ao salvar.");
       setSubmitting(false);

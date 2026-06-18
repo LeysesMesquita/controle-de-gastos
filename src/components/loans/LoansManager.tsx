@@ -5,8 +5,10 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { PlusIcon } from "@/icons";
+import { useCompany } from "@/context/CompanyContext";
 
 export const LoansManager = () => {
+  const { activeCompanyId } = useCompany();
   const [loans, setLoans] = useState<any[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -35,21 +37,23 @@ export const LoansManager = () => {
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
+      if (user && activeCompanyId) {
         setUserId(user.id);
-        fetchData(user.id);
+        fetchData(activeCompanyId);
+      } else if (!activeCompanyId) {
+        setLoading(false);
       } else {
         window.location.href = "/signin";
       }
     };
     init();
-  }, []);
+  }, [activeCompanyId]);
 
-  const fetchData = async (uid: string) => {
+  const fetchData = async (cid: string) => {
     setLoading(true);
     
     // Buscar Contas
-    const { data: accountsData } = await supabase.from("accounts").select("*").eq("user_id", uid);
+    const { data: accountsData } = await supabase.from("accounts").select("*").eq("company_id", cid);
     if (accountsData) {
       setAccounts(accountsData);
       if (accountsData.length > 0) setPayAccountId(accountsData[0].id);
@@ -59,7 +63,7 @@ export const LoansManager = () => {
     const { data: loansData } = await supabase
       .from("loans")
       .select("*, loan_payments(amount_paid)")
-      .eq("user_id", uid)
+      .eq("company_id", cid)
       .order("created_at", { ascending: false });
 
     if (loansData) {
@@ -94,6 +98,7 @@ export const LoansManager = () => {
     setErrorMsg("");
 
     const { error } = await supabase.from("loans").insert({
+      company_id: activeCompanyId,
       user_id: userId,
       type,
       person_name: personName,
@@ -117,7 +122,7 @@ export const LoansManager = () => {
     setInterestRate("0");
     setDueDate("");
     
-    fetchData(userId);
+    if (activeCompanyId) fetchData(activeCompanyId);
   };
 
   const openPayModal = (loan: any) => {
@@ -150,6 +155,7 @@ export const LoansManager = () => {
     try {
       // 1. Inserir a Amortização
       const { error: lpError } = await supabase.from("loan_payments").insert({
+        company_id: activeCompanyId,
         loan_id: selectedLoan.id,
         amount_paid: numericPay,
         payment_date: new Date().toISOString().split("T")[0],
@@ -176,6 +182,7 @@ export const LoansManager = () => {
 
       // 3. Criar Transação no Extrato
       const { error: txError } = await supabase.from("transactions").insert({
+        company_id: activeCompanyId,
         user_id: userId,
         description: `Amortização: ${selectedLoan.person_name}`,
         amount: numericPay,
@@ -195,7 +202,7 @@ export const LoansManager = () => {
 
       setIsPayModalOpen(false);
       setPaySubmitting(false);
-      fetchData(userId);
+      if (activeCompanyId) fetchData(activeCompanyId);
     } catch (err: any) {
       setPayErrorMsg("Erro ao processar: " + err.message);
       setPaySubmitting(false);
