@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import DefaultLayout from "@/layout/DefaultLayout"; // Assumindo que você quer a barra lateral
 
 export default async function SaasAdminLayout({
   children,
@@ -27,7 +26,7 @@ export default async function SaasAdminLayout({
   }
 
   return (
-    <DefaultLayout>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-title-md2 font-semibold text-black dark:text-white">
@@ -36,6 +35,6 @@ export default async function SaasAdminLayout({
         </div>
         {children}
       </div>
-    </DefaultLayout>
+    </div>
   );
 }
