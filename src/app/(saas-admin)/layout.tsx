@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import SaasSidebar from "@/layout/SaasSidebar";
+import SaasHeader from "@/layout/SaasHeader";
+import Backdrop from "@/layout/Backdrop";
+import { useSidebar } from "@/context/SidebarContext";
 
 export default function SaasAdminLayout({
   children,
@@ -11,24 +15,28 @@ export default function SaasAdminLayout({
 }) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
+  const [errorDetails, setErrorDetails] = useState("");
+  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   useEffect(() => {
     async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push("/signin");
+        console.error("Nenhum usuário logado encontrado.", userError);
+        router.push("/saas-login");
         return;
       }
 
-      const { data: saasAdmin } = await supabase
+      const { data: saasAdmin, error: saasError } = await supabase
         .from("saas_admins")
         .select("id")
         .eq("id", user.id)
         .single();
 
       if (!saasAdmin) {
-        router.push("/");
+        console.error("Usuário logado não está na tabela saas_admins.", saasError);
+        setErrorDetails("Você está logado, mas seu ID não foi encontrado na tabela saas_admins. Vá no Supabase e insira este ID: " + user.id);
         return;
       }
 
@@ -37,19 +45,29 @@ export default function SaasAdminLayout({
     checkAuth();
   }, [router]);
 
+  if (errorDetails) {
+    return <div className="min-h-screen flex items-center justify-center bg-white text-red-500 p-10 font-bold text-center">{errorDetails}</div>;
+  }
+
   if (!authorized) {
     return <div className="min-h-screen flex items-center justify-center">Verificando permissões...</div>;
   }
 
+  const mainContentMargin = isMobileOpen
+    ? "ml-0"
+    : isExpanded || isHovered
+    ? "lg:ml-[290px]"
+    : "lg:ml-[90px]";
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-title-md2 font-semibold text-black dark:text-white">
-            Painel SaaS (Super Admin)
-          </h2>
+    <div className="min-h-screen xl:flex">
+      <SaasSidebar />
+      <Backdrop />
+      <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin} bg-gray-50 dark:bg-gray-900`}>
+        <SaasHeader />
+        <div className="p-4 md:p-6 2xl:p-10">
+          {children}
         </div>
-        {children}
       </div>
     </div>
   );
